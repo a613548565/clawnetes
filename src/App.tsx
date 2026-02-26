@@ -53,6 +53,7 @@ function App() {
   const [agentEmoji, setAgentEmoji] = useState("🦞");
   const [agentType, setAgentType] = useState<AgentTypeId>("custom");
   const [apiKey, setApiKey] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
   const [authMethod, setAuthMethod] = useState("token"); 
   const [provider, setProvider] = useState("anthropic");
   const [model, setModel] = useState("anthropic/claude-opus-4-6");
@@ -475,6 +476,7 @@ Managed by Clawnetes.`;
       provider: initial.provider,
       api_key: initial.api_key,
       auth_method: initial.auth_method,
+      base_url: initial.base_url || "",
       model: initial.model,
       user_name: initial.user_name,
       agent_name: initial.agent_name,
@@ -540,6 +542,7 @@ Managed by Clawnetes.`;
         provider,
         api_key: apiKey,
         auth_method: authMethod,
+        base_url: baseUrl,
         model,
         user_name: userName,
         agent_name: agentName,
@@ -859,6 +862,7 @@ Managed by Clawnetes.`,
       // Populate state
       setProvider(config.provider);
       setApiKey(config.api_key);
+      setBaseUrl(config.base_url || "");
       setAuthMethod(config.auth_method);
       setModel(config.model);
       setUserName(config.user_name);
@@ -1741,6 +1745,19 @@ Managed by Clawnetes.`,
                     Run <code>claude setup-token</code> in your terminal and paste the result here.
                   </p>
                 )}
+              </div>
+
+              <div className="form-group" style={{marginTop: "1.5rem"}}>
+                <label>Base URL <span style={{fontWeight: "normal", opacity: 0.6}}>(Optional - for proxy/relay services)</span></label>
+                <input 
+                  type="text" 
+                  placeholder={provider === "anthropic" ? "https://api.anthropic.com" : provider === "openai" ? "https://api.openai.com/v1" : "Leave empty for official API"}
+                  value={baseUrl} 
+                  onChange={(e) => setBaseUrl(e.target.value)} 
+                />
+                <p className="input-hint">
+                  Only fill this if you use a third-party proxy/relay API service. Leave empty for official endpoints.
+                </p>
               </div>
 
             

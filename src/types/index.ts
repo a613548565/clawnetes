@@ -145,6 +145,7 @@ export interface ConfigPayload {
   provider: string;
   api_key: string;
   auth_method: string;
+  base_url: string;
   model: string;
   user_name: string;
   agent_name: string;

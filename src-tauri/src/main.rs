@@ -69,6 +69,7 @@ struct CurrentConfig {
     provider: String,
     api_key: String,
     auth_method: String,
+    base_url: Option<String>,
     model: String,
     user_name: String,
     agent_name: String,
@@ -109,6 +110,7 @@ struct AgentConfig {
     provider: String,
     api_key: String,
     auth_method: Option<String>,
+    base_url: Option<String>,
     model: String,
     user_name: String,
     agent_name: String,
@@ -1428,10 +1430,16 @@ fn configure_agent(config: AgentConfig) -> Result<String, String> {
 
     // Insert dynamic auth profile
     if let Some(profiles) = config_json.get_mut("auth").and_then(|a| a.get_mut("profiles")).and_then(|p| p.as_object_mut()) {
-        profiles.insert(profile_name.clone(), serde_json::json!({
+        let mut profile_obj = serde_json::json!({
             "provider": config.provider,
             "mode": auth_mode
-        }));
+        });
+        if let Some(ref base_url) = config.base_url {
+            if !base_url.is_empty() {
+                profile_obj.as_object_mut().unwrap().insert("baseUrl".to_string(), serde_json::json!(base_url));
+            }
+        }
+        profiles.insert(profile_name.clone(), profile_obj);
     }
 
     // Insert dynamic model key and optional fields
@@ -2374,6 +2382,7 @@ async fn get_current_config(remote: Option<RemoteInfo>) -> Result<CurrentConfig,
     let provider = profile.get("provider").and_then(|v| v.as_str()).unwrap_or("anthropic").to_string();
     let api_key = profile.get("token").and_then(|v| v.as_str()).unwrap_or("").to_string();
     let auth_method = profile.get("type").and_then(|v| v.as_str()).unwrap_or(if profile.get("mode").is_some() { profile.get("mode").and_then(|v| v.as_str()).unwrap_or("token") } else { "token" }).to_string();
+    let base_url = profile.get("baseUrl").and_then(|v| v.as_str()).map(|s| s.to_string());
 
     // Markdown Extraction (Main)
     let agent_name = extract_md_value(&identity_str, "Name");
@@ -2550,6 +2559,7 @@ async fn get_current_config(remote: Option<RemoteInfo>) -> Result<CurrentConfig,
         provider,
         api_key,
         auth_method,
+        base_url,
         model: model_primary,
         user_name,
         agent_name,
